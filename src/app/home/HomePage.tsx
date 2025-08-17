@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { UsersIcon, BookOpenIcon, CheckCircleIcon, StarIcon, ArrowRightIcon } from "lucide-react";
-import { CourseCard } from "@/components/CourseCard";
+import { CourseCard } from "@/components/courses/CourseCard";
 import type { Course } from "@/types/course";
 import type { PlatformStats } from "@/types/course";
 

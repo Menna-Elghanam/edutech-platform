@@ -2,46 +2,66 @@ import { prisma } from "@/lib/prisma";
 import type { Course, CreateCourseData, PaginatedCourses } from "@/types/course";
 
 export class CourseService {
-  static async getPaginatedCourses(page: number = 1, limit: number = 3): Promise<PaginatedCourses> {
-    const skip = (page - 1) * limit;
+static async getPaginatedCourses(
+  page: number = 1, 
+  limit: number = 4,
+  search?: string,
+  level?: string
+): Promise<PaginatedCourses> {
+  const skip = (page - 1) * limit;
+  
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {};
     
-    try {
-      const [courses, totalCount] = await Promise.all([
-        prisma.course.findMany({
-          skip,
-          take: limit,
-          orderBy: [
-            { featured: 'desc' },
-            { createdAt: 'desc' }
-          ],
-          include: {
-            creator: {
-              select: {
-                name: true,
-                email: true
-              }
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+    
+    if (level) {
+      where.level = level;
+    }
+
+    const [courses, totalCount] = await Promise.all([
+      prisma.course.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [
+          { featured: 'desc' },
+          { createdAt: 'desc' }
+        ],
+        include: {
+          creator: {
+            select: {
+              name: true,
+              email: true
             }
           }
-        }) as Promise<Course[]>,
-        prisma.course.count()
-      ]);
+        }
+      }) as Promise<Course[]>,
+      prisma.course.count({ where })
+    ]);
 
-      return {
-        courses,
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount,
-        currentPage: page
-      };
-    } catch (error) {
-      console.error("Failed to fetch courses:", error);
-      return {
-        courses: [],
-        totalPages: 0,
-        totalCount: 0,
-        currentPage: 1
-      };
-    }
+    return {
+      courses,
+      totalPages: Math.ceil(totalCount / limit),
+      totalCount,
+      currentPage: page
+    };
+  } catch (error) {
+    console.error("Failed to fetch courses:", error);
+    return {
+      courses: [],
+      totalPages: 0,
+      totalCount: 0,
+      currentPage: 1
+    };
   }
+}
 
   static async createCourse(data: CreateCourseData): Promise<Course> {
     try {
@@ -134,54 +154,6 @@ export class CourseService {
     }
   }
 
-  static async searchCourses(query: string, page: number = 1, limit: number = 10): Promise<PaginatedCourses> {
-    const skip = (page - 1) * limit;
-    
-    try {
-      const where = {
-        OR: [
-          { title: { contains: query, mode: 'insensitive' as const } },
-          { description: { contains: query, mode: 'insensitive' as const } }
-        ]
-      };
-
-      const [courses, totalCount] = await Promise.all([
-        prisma.course.findMany({
-          where,
-          skip,
-          take: limit,
-          orderBy: [
-            { featured: 'desc' },
-            { createdAt: 'desc' }
-          ],
-          include: {
-            creator: {
-              select: {
-                name: true,
-                email: true
-              }
-            }
-          }
-        }) as Promise<Course[]>,
-        prisma.course.count({ where })
-      ]);
-
-      return {
-        courses,
-        totalPages: Math.ceil(totalCount / limit),
-        totalCount,
-        currentPage: page
-      };
-    } catch (error) {
-      console.error("Failed to search courses:", error);
-      return {
-        courses: [],
-        totalPages: 0,
-        totalCount: 0,
-        currentPage: 1
-      };
-    }
-  }
 
   static async getFeaturedCourses(limit: number = 6): Promise<Course[]> {
     try {
