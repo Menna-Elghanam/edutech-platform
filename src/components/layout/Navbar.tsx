@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Menu, X, BookOpen } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { signOut } from 'next-auth/react'
-import UserProfile from '../../app/profile/user-profile'
+import UserProfile from '../../app/(main)/profile/user-profile'
 
 
 const navigation = [
