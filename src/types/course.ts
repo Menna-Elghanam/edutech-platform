@@ -1,3 +1,4 @@
+// types/course.ts
 import { Level } from "@prisma/client";
 
 export interface Course {
@@ -10,13 +11,17 @@ export interface Course {
   price: number;
   rating: number;
   studentsCount: number;
-  level:Level;
+  level: Level;
   createdAt: Date;
+  updatedAt: Date;
   creatorId: string | null;
   creator?: {
     name: string | null;
     email: string;
   } | null;
+  // Additional computed fields for admin dashboard
+  sectionsCount?: number;
+  lessonsCount?: number;
 }
 
 export interface CreateCourseData {
@@ -26,7 +31,7 @@ export interface CreateCourseData {
   featured: boolean;
   duration: string;
   price: number;
-  level:Level;
+  level: Level;
   creatorId: string;
 }
 

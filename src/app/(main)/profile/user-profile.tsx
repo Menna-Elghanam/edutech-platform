@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, Settings, LogOut, GraduationCap } from "lucide-react";
+import { User,  LogOut, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 
@@ -88,12 +88,7 @@ export default function UserProfile({ className }: UserProfileProps) {
           </Link>
         </DropdownMenuItem>
         
-        <DropdownMenuItem asChild>
-          <Link href="/settings" className="cursor-pointer">
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Settings</span>
-          </Link>
-        </DropdownMenuItem>
+        
         
         <DropdownMenuSeparator />
         

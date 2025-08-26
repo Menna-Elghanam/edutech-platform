@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client-js"
@@ -26,7 +21,7 @@ model User {
   // Relations
   courses   Course[] 
   enrollments   Enrollment[]
-
+  lessonProgress LessonProgress[]
 }
 
 model Course {
@@ -41,12 +36,67 @@ model Course {
   studentsCount Int    @default(0)                
   level       Level    @default(BEGINNER)         // Course difficulty
   createdAt   DateTime @default(now())
- // Relations
+  updatedAt   DateTime @updatedAt @default(now())  
+  
+  // Relations
   creator     User?    @relation(fields: [creatorId], references: [id])
   creatorId   String?
   enrollments Enrollment[]
-
+  sections    Section[]  
 }
+
+model Section {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  order       Int      // For ordering sections within a course
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId    String
+  lessons     Lesson[] // ← Relation to lessons
+  
+  @@unique([courseId, order]) 
+}
+
+model Lesson {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  content     String?    // Rich text content
+  videoUrl    String?    
+  duration    Int?       
+  order       Int        // For ordering lessons within a section
+  type        LessonType @default(TEXT)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  // Relations
+  section     Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  sectionId   String
+  rogress    LessonProgress[]
+  
+  @@unique([sectionId, order]) 
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lessonId    String
+  
+  @@unique([userId, lessonId]) // One progress record per user per lesson
+}
+
 model Enrollment {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
@@ -57,15 +107,23 @@ model Enrollment {
   course    Course @relation(fields: [courseId], references: [id])
   courseId  String
 
-  @@unique([userId, courseId]) // Prevent duplicate enrollments
+  @@unique([userId, courseId]) 
 }
 
 enum Role {
   ADMIN
   STUDENT
 }
+
 enum Level {
   BEGINNER
   INTERMEDIATE
   ADVANCED
+}
+
+enum LessonType {
+  TEXT
+  VIDEO
+  QUIZ
+  ASSIGNMENT
 }
